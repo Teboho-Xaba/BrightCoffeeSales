@@ -33,18 +33,6 @@ SELECT MIN(transaction_time) AS earliest_transaction,
        MAX(transaction_time) AS latest_transaction
 FROM workspace.default.bright_coffee_shop_analysis;
 
--- Time of day summary
-SELECT 
-    SUM(transaction_qty * unit_price) AS total_revenue,
-    COUNT(transaction_id) AS transaction_count,
-    CASE 
-        WHEN transaction_time BETWEEN '06:00:00' AND '11:59:59' THEN 'morning'
-        WHEN transaction_time BETWEEN '12:00:00' AND '17:59:59' THEN 'afternoon'
-        ELSE 'night'
-    END AS time_basket
-FROM workspace.default.bright_coffee_shop_analysis
-GROUP BY time_basket;
-
 -- Date & Month analysis
 SELECT dayname(to_date(transaction_date)) AS day_of_the_week 
 FROM workspace.default.bright_coffee_shop_analysis;
@@ -85,13 +73,8 @@ FROM workspace.default.bright_coffee_shop_analysis;
 
 SELECT
     *,
-    -- Fix unit_price (handles commas like '3,1')
     CAST(REPLACE(unit_price, ',', '.') AS DECIMAL(10,2)) AS unit_price_clean,
-
-    -- Required calculation
     transaction_qty * CAST(REPLACE(unit_price, ',', '.') AS DECIMAL(10,2)) AS total_amount,
-
-    -- Time buckets (updated label for evening as requested)
     CASE 
         WHEN transaction_time BETWEEN '06:00:00' AND '08:59:59' THEN '06:00-09:00'
         WHEN transaction_time BETWEEN '09:00:00' AND '11:59:59' THEN '09:00-12:00'
